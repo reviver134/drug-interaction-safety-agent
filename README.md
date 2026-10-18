@@ -174,3 +174,10 @@ be reachable from it; localhost refers to the app container itself. Mount extern
 data at /app/data if loading or fixture seeding is needed. Data, environments,
 logs and dependency folders are excluded from the image.
 Deploy in a trusted environment: mutation endpoints do not implement authentication.
+
+For free Render hosting with a separate FalkorDB Cloud database, use `render.yaml`
+and see [DEPLOY_RENDER.md](DEPLOY_RENDER.md). Set `FALKORDB_USERNAME`,
+`FALKORDB_PASSWORD` and `FALKORDB_SSL` alongside the host and port. TLS connections
+verify the server certificate and hostname. The Blueprint disables patient mutation
+endpoints. The daily GitHub Actions workflow runs a small read-only cloud query;
+this does not guarantee uptime or persistence on the database's free tier.
