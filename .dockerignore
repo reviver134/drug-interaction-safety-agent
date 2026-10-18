@@ -10,3 +10,6 @@ venv
 *.log
 frontend/test-results
 frontend/playwright-report
+figma images
+verification
+design-qa.md

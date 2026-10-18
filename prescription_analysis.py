@@ -55,6 +55,14 @@ def resolve_list(graph, names):
 
 
 def analyze_medications(graph, names):
+    query_trace = []
+    original_graph = graph
+    class TracedGraph:
+        def query(self, cypher, params=None):
+            response = original_graph.query(cypher, params or {})
+            query_trace.append({'cypher': cypher, 'parameters': params or {}, 'row_count': len(response.result_set)})
+            return response
+    graph = TracedGraph()
     medications = resolve_list(graph, names)
     ingredients = {}
     for med in medications:
@@ -110,7 +118,7 @@ def analyze_medications(graph, names):
     unknown_severity = [p['pair_id'] for p in pairs if any(
         item['kind'] == 'ddinter' and str(item.get('strength') or '').lower() not in {'major', 'moderate', 'minor'}
         for item in p['paths'])]
-    return {'medications': medications, 'ingredients': list(ingredients.values()),
+    return {'query_trace': query_trace, 'medications': medications, 'ingredients': list(ingredients.values()),
             'pairs': pairs, 'evidence': evidence, 'label_context': label_context,
             'label_descriptions': label_descriptions,
             'coverage': {'unique_ingredients': len(ingredients), 'checked_pairs': len(pairs),
