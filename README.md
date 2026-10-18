@@ -83,7 +83,7 @@ For a quick check, open the live application, enter `simvastatin` and
 The demo graph returns a review-required interaction with supporting evidence.
 This example demonstrates the software and is not a medication recommendation.
 
-The default model is `gemini-2.5-flash`; change GEMINI_MODEL to one available to
+The default model is `gemini-3.8-flash`; change GEMINI_MODEL to one available to
 your account. Restart the API after changing configuration. Without a key, photo
 reading is disabled and explanations use a deterministic graph-evidence template.
 Gemini failures or invalid citations also fall back to that template.

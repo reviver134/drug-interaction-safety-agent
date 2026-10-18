@@ -49,11 +49,27 @@ class Explanation(BaseModel):
 
 
 def model_name():
-    return os.getenv('GEMINI_MODEL', 'gemini-2.5-flash')
+    return os.getenv('GEMINI_MODEL', 'gemini-3.8-flash')
 
 
 def configured():
     return bool(os.getenv('GEMINI_API_KEY') or os.getenv('GOOGLE_API_KEY'))
+
+
+def provider_error_message(exc):
+    """Describe provider failures without exposing keys or raw provider payloads."""
+    code = getattr(exc, 'code', None)
+    if code == 401 or (code == 400 and 'API_KEY_INVALID' in str(exc)):
+        return 'Google rejected the configured Gemini API key. The service owner needs to replace it and redeploy.'
+    if code == 403:
+        return 'Gemini access was denied. The service owner needs to check API access and key restrictions.'
+    if code == 404:
+        return 'The configured Gemini model is unavailable. The service owner needs to select an available model and redeploy.'
+    if code == 429:
+        return 'Gemini quota or rate limit reached. Try again later; the service owner may need to check the project quota.'
+    if code in {500, 502, 503, 504}:
+        return 'Gemini is temporarily unavailable. Try again later.'
+    return 'Gemini could not complete this request. Try again or enter medications manually.'
 
 
 def generate(contents, schema, instruction):
@@ -73,7 +89,7 @@ def generate(contents, schema, instruction):
             )
         return schema.model_validate_json(response.text)
     except Exception as exc:
-        raise GeminiUnavailable('Gemini could not complete this request. Try again or enter medications manually.') from exc
+        raise GeminiUnavailable(provider_error_message(exc)) from exc
 
 
 def prepare_image(raw):
@@ -224,5 +240,7 @@ No patient-specific advice.''')
                 'label_findings': [next((f.model_dump() for f in output.label_findings
                                         if f.ingredient_key == label['ingredient_key']), label)
                                    for label in label_fallback]}
-    except (GeminiUnavailable, ValueError):
+    except GeminiUnavailable as exc:
+        return {**result, 'reason': f'{exc} Showing source evidence instead.'}
+    except ValueError:
         return {**result, 'reason': 'Gemini explanation unavailable or unsupported; showing source evidence instead.'}
