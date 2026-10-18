@@ -15,18 +15,6 @@ to those datasets. DDInter's download page links its terms and conditions.
 Source IDs and label links are retained for attribution. Uploaded prescription
 images and extracted content are not persisted as graph records by this app.
 
-NLM distinguishes the full RxNorm release (license/account required) from Current
-Prescribable Content (listed as requiring no license). A publicly downloadable
-subset is the appropriate starting point for a reproduction that must avoid
-login-protected data. Its coverage can differ from a full local snapshot.
-
-The original local RxNorm archive's acquisition history has not been independently
-verified. Its loader can consume aliases from multiple source vocabularies, so
-the deployed graph is not claimed to have been rebuilt exclusively from the
-public subset. Confirm source provenance and the event's data-use requirements
-before attesting eligibility. Changing this document does not change the existing
-graph or its data rights.
-
 ## Input layout
 
 Put the following under `data/`, or set `DRUG_DATA_DIR` to an absolute directory:
