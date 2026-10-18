@@ -1,0 +1,8 @@
+falkordb==1.8.0
+fastapi==0.143.3
+uvicorn[standard]==0.54.0
+mcp==2.3.0
+google-genai==2.31.0
+Pillow==13.0.0
+python-dotenv==1.2.4
+ijson>=3.3,<4

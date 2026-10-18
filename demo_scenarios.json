@@ -1,0 +1,115 @@
+{
+  "metadata": {
+    "created": "2026-10-17",
+    "scope": "session_1_demo_manifest",
+    "graph_target": "drug_interactions@localhost:6379",
+    "source_snapshot": {
+      "canonical_drug_count": 6834,
+      "name_to_rxcui_entries": 15845,
+      "rxcui_to_ingredient_entries": 37674,
+      "atc_mappings": 0,
+      "notes": "This local RxNorm snapshot contains no ATC rows. `atc_code` remains unset until a fuller snapshot is supplied."
+    },
+    "backup_location": "verification/baseline_snapshot_2026-10-17",
+    "restore_procedure": [
+      "1. Preserve the repository snapshot and all source mapping files in this backup directory.",
+      "2. If a FalkorDB graph instance is available, export the current graph with GRAPH.EXPORT or a full database dump before any schema or relationship-layer changes.",
+      "3. Restore the graph by reloading the exported data or by rerunning the Session 1 RxNorm loader against the saved source files and maps.",
+      "4. Re-check canonical counts and identity mapping invariants before continuing to Session 2."
+    ]
+  },
+  "enabled_features": {
+    "direct_ddinter_scenarios": true,
+    "mechanism_path_demo": true,
+    "condition_checks": false,
+    "qt_stacking": false,
+    "pharmacogenomics": false,
+    "sertraline_tramadol": false,
+    "digoxin_amiodarone": false
+  },
+  "disabled_extensions": [
+    "codeine_pharmacogenomics",
+    "qt_stacking",
+    "sertraline_tramadol",
+    "renal_condition_checks",
+    "digoxin_amiodarone"
+  ],
+  "scenarios": [
+    {
+      "id": "SCN001",
+      "patient_id": "PAT001",
+      "current_drugs": ["clarithromycin"],
+      "proposed_drug": "simvastatin",
+      "expected_direct_evidence": {
+        "pair": "clarithromycin/simvastatin",
+        "severity": "Major"
+      },
+      "expected_mechanism": {
+        "direction": "incoming",
+        "actor_drug": "clarithromycin",
+        "relationship": "INHIBITS",
+        "enzyme": "CYP3A4",
+        "strength": "strong",
+        "substrate_drug": "simvastatin",
+        "substrate_sensitivity": "sensitive",
+        "source_reference": "fda_table1"
+      },
+      "enabled": true,
+      "notes": "Requires the full current-drug INHIBITS enzyme SUBSTRATE_OF proposed-drug path and should be confirmed via Session 4 queries."
+    },
+    {
+      "id": "SCN002",
+      "patient_id": "PAT002",
+      "current_drugs": ["warfarin"],
+      "proposed_drug": "fluconazole",
+      "expected_direct_evidence": {
+        "pair": "warfarin/fluconazole",
+        "severity": "Major"
+      },
+      "expected_mechanism": {
+        "direction": "outgoing",
+        "actor_drug": "fluconazole",
+        "relationship": "INHIBITS",
+        "enzyme": "CYP2C9",
+        "strength": "moderate",
+        "substrate_drug": "warfarin",
+        "substrate_sensitivity": "moderate_sensitive",
+        "source_reference": "fda_table1"
+      },
+      "enabled": true,
+      "notes": "Session 4 verifies both the direct DDInter severity and the source-backed CYP2C9 mechanism path."
+    },
+    {
+      "id": "SCN003",
+      "patient_id": "PAT003",
+      "current_drugs": ["warfarin"],
+      "proposed_drug": "rifampin",
+      "expected_direct_evidence": {
+        "pair": "warfarin/rifampin",
+        "severity": "Major"
+      },
+      "expected_mechanism": {
+        "direction": "outgoing",
+        "actor_drug": "rifampin",
+        "relationship": "INDUCES",
+        "enzyme": "CYP2C9",
+        "strength": "moderate",
+        "substrate_drug": "warfarin",
+        "substrate_sensitivity": "moderate_sensitive",
+        "source_reference": "fda_table1"
+      },
+      "enabled": true,
+      "notes": "Session 4 verifies both the direct DDInter severity and the source-backed CYP2C9 mechanism path."
+    },
+    {
+      "id": "SCN004",
+      "patient_id": "PAT004",
+      "current_drugs": ["warfarin"],
+      "proposed_drug": "not_a_real_drug_name_999",
+      "expected_direct_evidence": null,
+      "expected_mechanism": null,
+      "enabled": false,
+      "notes": "Deliberately unresolved input; the resolver must not invent a match from a missing drug name."
+    }
+  ]
+}
