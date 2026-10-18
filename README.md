@@ -1,5 +1,41 @@
 # Drug Interaction Safety Agent
 
+**Graph Hacks: Context for AI Agents — Track 01: Agents That Act on Connected Data**
+
+- [Live application](https://drug-interaction-safety-agent.onrender.com)
+- [Public source code](https://github.com/reviver134/drug-interaction-safety-agent)
+- [Hackathon](https://www.wemakedevs.org/hackathons/falkordb)
+- [Graph model and architecture](docs/GRAPH_MODEL.md)
+- [Runnable Cypher examples](docs/queries.cypher)
+- [Data sources and rebuild instructions](docs/DATA_SOURCES.md)
+
+## Why FalkorDB is central
+
+The problem is relational: one medicine can inhibit an enzyme that metabolizes
+another medicine. FalkorDB connects drugs, enzymes, transporters and source-label
+context. The backend traverses those relationships and applies deterministic demo
+rules to the returned evidence. Gemini extracts medication names and explains
+the evidence; it does not determine interaction verdicts. Removing FalkorDB
+prevents medication resolution and interaction analysis, and returns an error.
+
+The hosted website is a human-confirmed, fixed workflow: extract or type names,
+review ingredients, query the graph, then explain the result. It does not run an
+autonomous LLM tool-selection loop. A separate MCP server exposes the same graph
+operations to MCP-capable agent clients; that stdio server is not hosted by the
+website. Track 01 is the intended track; persistent agent memory, multi-agent
+coordination and company knowledge are not implemented.
+
+## AI assistance disclosure
+
+OpenAI Codex assisted with implementation changes, debugging, verification,
+GitHub/Render deployment and documentation. Gemini is also used at runtime for
+prescription-image extraction and evidence-grounded explanations. The participant
+remains responsible for reviewing the code and explaining its graph model,
+queries, architecture and technical choices. AI assistance does not establish
+the project's development dates or dataset-use permissions.
+
+## Application
+
 Upload prescription photos, review the extracted medications, confirm matched
 ingredients, and check every unique ingredient pair. Gemini extracts names from
 photos and explains returned DDInter/CYP graph evidence in simple language.
@@ -15,13 +51,15 @@ processes submitted images under your configured account's data policies.
 
 ## Start locally (PowerShell)
 
-Requires Python 3.11+, Node.js and a populated FalkorDB graph.
+Use Python 3.13 and Node.js 22 to match the deployment image, plus Docker for
+a local database or an existing FalkorDB Cloud instance.
 
 ```powershell
 python -m venv venv
 .\venv\Scripts\python.exe -m pip install -r requirements.txt
 Copy-Item .env.example .env
-# Edit .env: set GEMINI_API_KEY and optionally GEMINI_MODEL.
+# Edit .env: set graph credentials and optionally GEMINI_API_KEY.
+# The graph must be populated; see "Data and graph loading" below.
 cd frontend
 npm ci
 npm run build
@@ -35,6 +73,15 @@ Set `FALKORDB_HOST`, `FALKORDB_PORT`, `FALKORDB_GRAPH` in each process;
 defaults: localhost, 6379, drug_interactions. Startup reuses the existing graph.
 `.env` is loaded from the project root; process environment variables take precedence.
 The API key stays on the server and is never sent to the browser.
+For Cloud, also set `FALKORDB_USERNAME`, `FALKORDB_PASSWORD` and `FALKORDB_SSL`
+to the connection panel's values. Use its assigned port, not an assumed default.
+Keep `ENABLE_PATIENT_MUTATIONS=false` for the public website. The health endpoint
+`GET /api/health` returns 503 if the database is unavailable or has no Drug nodes.
+
+For a quick check, open the live application, enter `simvastatin` and
+`fluconazole`, resolve the ingredients, confirm them and run the analysis.
+The demo graph returns a review-required interaction with supporting evidence.
+This example demonstrates the software and is not a medication recommendation.
 
 The default model is `gemini-2.5-flash`; change GEMINI_MODEL to one available to
 your account. Restart the API after changing configuration. Without a key, photo
@@ -42,6 +89,11 @@ reading is disabled and explanations use a deterministic graph-evidence template
 Gemini failures or invalid citations also fall back to that template.
 
 ## Data and graph loading
+
+Source datasets and database snapshots are not included in Git. Before running
+loaders, obtain the input files and arrange them as documented in
+[DATA_SOURCES.md](docs/DATA_SOURCES.md). A clone alone does not include a populated
+database. The deployed site can be evaluated without downloading source datasets.
 
 Bulk data and generated maps are in ignored `data/`. Move this folder outside
 the repository and set `$env:DRUG_DATA_DIR = 'D:\drug-data'` in each process.
@@ -86,10 +138,14 @@ files remain for legacy demo endpoints; uploads never create patient records.
 For a fresh graph:
 
 ```powershell
-docker run -d --name drug-graph -p 6379:6379 -v drug-graph-data:/data falkordb/falkordb
+docker run -d --name drug-graph -p 6379:6379 -v drug-graph-data:/var/lib/falkordb/data -e "REDIS_ARGS=--appendonly yes --appendfsync everysec" falkordb/falkordb
 .\venv\Scripts\python.exe session1_rxnorm.py
 .\venv\Scripts\python.exe session2_ddinter.py
 .\venv\Scripts\python.exe session3_fda_cyp.py
+.\venv\Scripts\python.exe rxnorm_ingredients.py
+.\venv\Scripts\python.exe session4_openfda.py
+.\venv\Scripts\python.exe build_medication_aliases.py
+# Optional: seed synthetic patients for the legacy API/MCP demo.
 .\venv\Scripts\python.exe session5_patients.py
 ```
 
