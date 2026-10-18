@@ -1,0 +1,25 @@
+name: Daily FalkorDB check
+on:
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      FALKORDB_HOST: ${{ secrets.FALKORDB_HOST }}
+      FALKORDB_PORT: ${{ secrets.FALKORDB_PORT }}
+      FALKORDB_USERNAME: ${{ secrets.FALKORDB_USERNAME }}
+      FALKORDB_PASSWORD: ${{ secrets.FALKORDB_PASSWORD }}
+      FALKORDB_SSL: ${{ secrets.FALKORDB_SSL }}
+      FALKORDB_GRAPH: drug_interactions
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: pip install falkordb==1.8.0 python-dotenv==1.2.4
+      - run: python keep_falkordb_awake.py
