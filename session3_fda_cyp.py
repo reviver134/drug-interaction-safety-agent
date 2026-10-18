@@ -36,7 +36,7 @@ from session2_ddinter import DrugResolver, normalize_name
 # ─────────────────────────────────────────────
 # CONFIG
 # ─────────────────────────────────────────────
-from settings import DATA_DIR, HOST, PORT, GRAPH_NAME
+from settings import DATA_DIR, HOST, PORT, GRAPH_NAME, graph_client
 LOG_DIR = DATA_DIR / "logs"
 LOG_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -481,7 +481,7 @@ def main():
     log.info("Using FDA data file: %s", os.path.abspath(FDA_CSV))
 
     try:
-        db = FalkorDB(host=FALKORDB_HOST, port=FALKORDB_PORT)
+        db = graph_client()
         graph = db.select_graph(GRAPH_NAME)
     except Exception as exc:
         log.error("Failed to connect to FalkorDB: %s", exc)

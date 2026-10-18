@@ -101,6 +101,8 @@ def analyze(request: ConfirmedPrescription):
 def health():
     try:
         rows = service.connect_graph().query('MATCH (d:Drug) RETURN count(d)').result_set
+        if not rows or rows[0][0] == 0:
+            raise RuntimeError('Drug graph is empty')
         return {'ok': True, 'graph': service.GRAPH_NAME, 'drugs': rows[0][0]}
     except Exception as exc:
         raise HTTPException(503, 'FalkorDB is unavailable') from exc

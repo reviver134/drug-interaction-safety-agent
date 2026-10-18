@@ -1,37 +1,25 @@
-# Both services are paid. Review Render's cost estimate before creating them.
+# Free web hosting; the database is hosted separately on FalkorDB Cloud.
 services:
-  - type: pserv
-    name: drug-safety-graph
-    runtime: image
-    image:
-      url: docker.io/falkordb/falkordb:latest
-    region: singapore
-    plan: 0.5c-512mb
-    envVars:
-      - key: REDIS_ARGS
-        value: --appendonly yes --appendfsync everysec
-    disk:
-      name: graph-data
-      mountPath: /var/lib/falkordb/data
-      sizeGB: 1
-
   - type: web
     name: drug-safety
     runtime: docker
     region: singapore
-    plan: 0.5c-512mb
+    plan: free
     dockerfilePath: ./Dockerfile
     healthCheckPath: /api/health
     envVars:
       - key: PORT
         value: "8000"
       - key: FALKORDB_HOST
-        fromService:
-          name: drug-safety-graph
-          type: pserv
-          property: host
+        sync: false
       - key: FALKORDB_PORT
-        value: "6379"
+        sync: false
+      - key: FALKORDB_USERNAME
+        sync: false
+      - key: FALKORDB_PASSWORD
+        sync: false
+      - key: FALKORDB_SSL
+        value: "false"
       - key: FALKORDB_GRAPH
         value: drug_interactions
       - key: GEMINI_API_KEY

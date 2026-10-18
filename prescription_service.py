@@ -8,7 +8,7 @@ from typing import Any
 from falkordb import FalkorDB
 
 
-from settings import HOST as FALKORDB_HOST, PORT as FALKORDB_PORT, GRAPH_NAME
+from settings import HOST as FALKORDB_HOST, PORT as FALKORDB_PORT, GRAPH_NAME, graph_client
 
 PATIENT_CONTEXT_QUERY = """
 MATCH (p:Patient {id: $patient_id})
@@ -60,7 +60,7 @@ class ServiceError(Exception):
 
 
 def connect_graph() -> Any:
-    return FalkorDB(host=FALKORDB_HOST, port=FALKORDB_PORT).select_graph(GRAPH_NAME)
+    return graph_client().select_graph(GRAPH_NAME)
 
 
 def _query(

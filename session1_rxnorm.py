@@ -29,7 +29,7 @@ from falkordb import FalkorDB
 # ─────────────────────────────────────────────
 # CONFIG
 # ─────────────────────────────────────────────
-from settings import DATA_DIR, HOST, PORT, GRAPH_NAME
+from settings import DATA_DIR, HOST, PORT, GRAPH_NAME, graph_client
 LOG_DIR = DATA_DIR / "logs"
 LOG_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -595,7 +595,7 @@ def main():
     # Connect to FalkorDB
     log.info("Connecting to FalkorDB at %s:%d ...", FALKORDB_HOST, FALKORDB_PORT)
     try:
-        db    = FalkorDB(host=FALKORDB_HOST, port=FALKORDB_PORT)
+        db    = graph_client()
         graph = db.select_graph(GRAPH_NAME)
         graph.query("RETURN 1")
         log.info("Connected to FalkorDB graph '%s'", GRAPH_NAME)

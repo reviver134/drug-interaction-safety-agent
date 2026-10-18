@@ -7,7 +7,7 @@ from pathlib import Path
 from falkordb import FalkorDB
 
 
-from settings import DATA_DIR, HOST, PORT, GRAPH_NAME
+from settings import DATA_DIR, HOST, PORT, GRAPH_NAME, graph_client
 
 
 def load_demo_patients(path: str | Path | None = None) -> list[dict]:
@@ -24,7 +24,7 @@ def resolve_rxcui(name: str, mapping: dict[str, str]) -> str | None:
 
 def seed_demo_patients(graph=None, patients=None) -> dict[str, int]:
     if graph is None:
-        graph = FalkorDB(host=HOST, port=PORT).select_graph(GRAPH_NAME)
+        graph = graph_client().select_graph(GRAPH_NAME)
     if patients is None:
         patients = load_demo_patients()
 
@@ -107,7 +107,7 @@ def seed_demo_patients(graph=None, patients=None) -> dict[str, int]:
 
 def run_health_checks(graph=None) -> None:
     if graph is None:
-        graph = FalkorDB(host=HOST, port=PORT).select_graph(GRAPH_NAME)
+        graph = graph_client().select_graph(GRAPH_NAME)
 
     patients = load_demo_patients()
     patient_ids = [patient["id"] for patient in patients]
@@ -149,7 +149,7 @@ def run_health_checks(graph=None) -> None:
 
 
 if __name__ == "__main__":
-    graph = FalkorDB(host=HOST, port=PORT).select_graph(GRAPH_NAME)
+    graph = graph_client().select_graph(GRAPH_NAME)
     result = seed_demo_patients(graph=graph, patients=load_demo_patients())
     run_health_checks(graph)
     print(json.dumps(result, indent=2))
